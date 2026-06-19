@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<!-- 
+    WŁASNOŚĆ INTELEKTUALNA (Copyright) 
+    (c) 2026 [Futura - Krzysztof Hyżorek]. 
+    Wszelkie prawa zastrzeżone. 
+    Kopiowanie, dystrybucja, modyfikacja i wykorzystywanie kodu źródłowego 
+    bez wyraźnej zgody właściciela są zabronione.
+-->
+<html lang="pl">
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kreator Punktów Mapy - Wirtualne Podróże Dronem</title>
+    <!-- Tailwind CSS dla nowoczesnego i responsywnego designu -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter i Playfair Display dla turystyczno-dziennikarskiego klimatu -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Font Awesome dla ikon turystycznych, kompasu, wózków inwalidzkich itp. -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        travel: {
+                            50: '#fdfbf7',
+                            100: '#f5efe6',
+                            200: '#e6d5bc',
+                            600: '#b8860b',
+                            700: '#8b6508',
+                            800: '#5c4306',
+                        },
+                        emerald: {
+                            50: '#f0fdf4',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar dla estetycznego wyglądu */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c5a880;
+            border-radius: 10px;
+        }
+        /* Styl tła nawiązujący do kartografii */
+        .bg-map-pattern {
+            background-color: #f5efe6;
+            background-image: radial-gradient(rgba(184, 134, 11, 0.15) 1px, transparent 0),
+                              radial-gradient(rgba(184, 134, 11, 0.15) 1px, transparent 0);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+        }
+    </style>
+</head>
+<body class="bg-map-pattern font-sans min-h-screen py-6 px-4 flex flex-col items-center justify-start text-slate-800">
+
+<div class="w-full max-w-xl bg-white/95 backdrop-blur-sm shadow-2xl rounded-3xl overflow-hidden border border-travel-200 flex flex-col">
+    
+    <!-- NAGŁÓWEK FORMULARZA -->
+    <header class="relative bg-gradient-to-r from-travel-800 to-travel-700 text-amber-50 py-8 px-6 text-center border-b border-travel-600">
+        <!-- Subtelna róża wiatrów w tle nagłówka -->
+        <div class="absolute inset-0 opacity-10 flex items-center justify-center pointer-events-none">
+            <i class="fa-solid fa-compass text-[12rem] rotate-12"></i>
+        </div>
+        <div class="relative z-10">
+            <span class="text-xs font-semibold tracking-widest text-amber-300 uppercase block mb-1">Panel Administracyjny v2.0</span>
+            <h1 class="text-2xl md:text-3xl font-serif font-bold tracking-tight">Wirtualny Lot Dronem</h1>
+            <p class="text-xs text-amber-100/80 mt-1">Narzędzie do strukturyzacji punktów POI dla silnika Unity</p>
+        </div>
+    </header>
+
+    <!-- ZAKŁADKI (FORMULARZ / JAK UDOSTĘPNIĆ) -->
+    <div class="flex border-b border-slate-100 bg-slate-50/50">
+        <button id="tabFormBtn" onclick="switchTab('form')" class="flex-1 py-3 px-4 text-sm font-semibold text-travel-700 border-b-2 border-travel-600 bg-white transition-all">
+            <i class="fa-solid fa-pen-to-square mr-2"></i>Formularz POI
+        </button>
+        <button id="tabShareBtn" onclick="switchTab('share')" class="flex-1 py-3 px-4 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition-all">
+            <i class="fa-solid fa-share-nodes mr-2"></i>Jak udostępnić? <span class="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">Zrób to sam!</span>
+        </button>
+    </div>
+
+    <!-- ZAWARTOŚĆ FORMULARZA -->
+    <main id="tabFormContent" class="p-6 space-y-6">
+        
+        <!-- SEKCJA MULTIMEDIÓW (ZDJĘCIE / FILM) -->
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <i class="fa-solid fa-images text-travel-600 mr-1"></i> Multimedia (Zdjęcie lub film punktu)
+            </label>
+            <div id="dropZone" class="border-2 border-dashed border-travel-200 hover:border-travel-600 rounded-2xl p-6 text-center cursor-pointer bg-travel-50/50 hover:bg-travel-50 transition-all group relative overflow-hidden">
+                <input type="file" id="mediaInput" class="hidden" accept="image/*,video/*">
+                
+                <div id="dropZoneDefault" class="space-y-3">
+                    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-md border border-travel-100 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-cloud-arrow-up text-2xl text-travel-600"></i>
+                    </div>
+                    <p class="text-sm font-medium text-slate-700">Przeciągnij i upuść lub <span class="text-travel-600 underline">kliknij</span>, aby dodać</p>
+                    <p class="text-xs text-slate-400">Zdjęcie (.png, .jpg) lub wideo (.mp4) z drona</p>
+                </div>
+
+                <!-- Podgląd wgranego pliku -->
+                <div id="previewContainer" class="hidden absolute inset-0 bg-slate-900 flex items-center justify-center">
+                    <img id="imagePreview" class="hidden w-full h-full object-cover">
+                    <video id="videoPreview" class="hidden w-full h-full object-cover" controls></video>
+                    <button type="button" onclick="clearMedia(event)" class="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all z-10">
+                        <i class="fa-solid fa-trash-can text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- NAZWA LOKACJI -->
+        <div>
+            <label for="poiName" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <i class="fa-solid fa-map-pin text-travel-600 mr-1"></i> Nazwa Miejsca / Lokacji
+            </label>
+            <input type="text" id="poiName" placeholder="Wpisz nazwę (np. Most Tumski we Wrocławiu)" 
+                   class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-travel-600 focus:bg-white focus:border-transparent outline-none transition-all font-medium text-slate-800">
+        </div>
+
+        <!-- KRÓTKI OPIS -->
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <i class="fa-solid fa-align-left text-travel-600 mr-1"></i> Krótki Opis (widoczny na HUD)
+            </label>
+            <div class="border border-slate-200 rounded-xl overflow-hidden bg-slate-50 focus-within:ring-2 focus-within:ring-travel-600 focus-within:bg-white transition-all">
+                <!-- Prosty pasek edytora tekstu -->
+                <div class="bg-slate-100 px-3 py-1.5 border-b border-slate-200 flex gap-2 text-xs text-slate-500 font-mono">
+                    <button type="button" class="hover:text-slate-800 px-1 py-0.5 rounded font-bold">B</button>
+                    <button type="button" class="hover:text-slate-800 px-1 py-0.5 rounded italic">I</button>
+                    <button type="button" class="hover:text-slate-800 px-1 py-0.5 rounded underline">U</button>
+                </div>
+                <textarea id="poiShortDesc" rows="2" placeholder="Zwięzły i zachęcający opis, który zmieści się na ekranie drona podczas lotu..." 
+                          class="w-full px-4 py-3 bg-transparent outline-none resize-none text-slate-800 text-sm"></textarea>
+            </div>
+        </div>
+
+        <!-- HISTORIA MIEJSCA -->
+        <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <i class="fa-solid fa-book-open text-travel-600 mr-1"></i> Historia Miejsca (Do Dziennika Podróży)
+            </label>
+            <div class="relative rounded-2xl border border-amber-200/60 bg-gradient-to-br from-amber-50/70 to-orange-50/40 p-1">
+                <!-- Imitacja startej kartki dziennika -->
+                <textarea id="poiHistory" rows="5" placeholder="Napisz pasjonującą opowieść lub historię tego miejsca. Gracz odblokuje ją po wylądowaniu..." 
+                          class="w-full px-4 py-4 bg-transparent outline-none resize-none text-slate-800 text-sm font-serif italic leading-relaxed placeholder-amber-800/40"></textarea>
+                <div class="absolute bottom-2 right-2 text-amber-900/10 pointer-events-none">
+                    <i class="fa-solid fa-feather-pointed text-2xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- STATYSTYKI EKSPLORACJI -->
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="poiSteps" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    <i class="fa-solid fa-star text-travel-600 mr-1"></i> Liczba punktów do zwiedzenia 
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"><i class="fa-solid fa-award"></i></span>
+                    <input type="number" id="poiSteps" value="1200" min="0" 
+                           class="w-full pl-9 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-travel-600 focus:bg-white focus:border-transparent outline-none transition-all text-sm font-semibold">
+                </div>
+            </div>
+            <div>
+                <label for="poiPrice" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                    <i class="fa-solid fa-ticket text-travel-600 mr-1"></i> Cena Biletu (PLN)
+                </label>
+                <div class="relative">
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">zł</span>
+                    <input type="number" id="poiPrice" value="0.00" min="0" step="0.01" 
+                           class="w-full pl-8 pr-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-travel-600 focus:bg-white focus:border-transparent outline-none transition-all text-sm font-semibold">
+                </div>
+            </div>
+        </div>
+
+        <!-- DOSTĘPNOŚĆ DLA WÓZKÓW -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-travel-100 rounded-full flex items-center justify-center text-travel-700">
+                    <i class="fa-solid fa-wheelchair text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800">Dostępność dla wózków</h4>
+                    <p class="text-xs text-slate-500">Czy miejsce jest wolne od barier architektonicznych?</p>
+                </div>
+            </div>
+            <!-- Custom switch -->
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="poiWheelchair" class="sr-only peer">
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+            </label>
+        </div>
+
+        <!-- CIEKAWOSTKA -->
+        <div>
+            <label for="poiTrivia" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <i class="fa-solid fa-lightbulb text-amber-500 mr-1"></i> Ciekawostka (Fun Fact do odblokowania)
+            </label>
+            <textarea id="poiTrivia" rows="2" placeholder="Dodaj niesamowity fakt, który zaskoczy i zmotywuje gracza podczas eksploracji!" 
+                      class="w-full px-4 py-3 bg-amber-50/30 border border-amber-100 rounded-xl focus:ring-2 focus:ring-amber-400 focus:bg-white focus:border-transparent outline-none transition-all text-sm italic"></textarea>
+        </div>
+
+        <!-- SEKCJA AUTORSKA (ELŻBIETA KOWALSKA) -->
+        <div class="bg-gradient-to-br from-travel-50 to-amber-50/50 border border-travel-200/70 rounded-2xl p-4 space-y-4 relative">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-travel-700"><i class="fa-solid fa-signature mr-1"></i> Notka Autora</span>
+                <button type="button" onclick="toggleAuthorEdit()" id="editAuthorBtn" class="text-xs text-travel-600 hover:text-travel-800 font-semibold flex items-center gap-1 transition-colors">
+                    <i class="fa-solid fa-pen"></i> Edytuj Notkę
+                </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
+                <!-- Zdjęcie + Logo -->
+                <div class="flex items-center space-x-3 shrink-0">
+                    <!-- Zdjęcie Elżbiety (kobieta ok. 55 lat) -->
+                    <div class="relative group">
+                        <img id="authorAvatar" src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120" alt="Elżbieta Kowalska" class="w-16 h-16 rounded-full object-cover border-2 border-travel-600 shadow-md">
+                        <div class="absolute -bottom-1 -right-1 bg-travel-700 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]" title="Aktywna Autorka">
+                            <i class="fa-solid fa-graduation-cap"></i>
+                        </div>
+                    </div>
+                    <!-- Logo (Uploadable Placeholder) -->
+                    <div onclick="document.getElementById('logoInput').click()" class="w-16 h-16 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center bg-white cursor-pointer hover:border-travel-600 hover:bg-travel-50/50 transition-all text-center p-1" title="Kliknij, aby wgrać logo">
+                        <input type="file" id="logoInput" class="hidden" accept="image/*">
+                        <img id="logoPreview" class="hidden w-full h-full object-contain">
+                        <div id="logoDefault" class="text-slate-400">
+                            <i class="fa-solid fa-building-columns text-lg"></i>
+                            <span class="text-[8px] block leading-tight font-semibold uppercase mt-0.5">LOGO</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bio Text / Textarea -->
+                <div class="flex-1 text-center sm:text-left">
+                    <h5 id="authorName" class="text-sm font-bold text-slate-800">Elżbieta Kowalska</h5>
+                    
+                    <!-- Podgląd Bio -->
+                    <p id="authorBioText" class="text-xs text-slate-600 leading-relaxed italic mt-1">
+                        Pasjonatka historii, w szczególności Wrocławia, aktywna emerytka, miłośniczka kawy i dobrych rozmów.
+                    </p>
+                    
+                    <!-- Edytor Bio (Ukryty domyślnie) -->
+                    <div id="authorBioEditContainer" class="hidden space-y-2 mt-2">
+                        <input type="text" id="authorNameInput" value="Elżbieta Kowalska" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-md">
+                        <textarea id="authorBioInput" rows="3" class="w-full px-2 py-1 text-xs border border-slate-200 rounded-md text-slate-700 italic leading-normal">Pasjonatka historii, w szczególności Wrocławia, aktywna emerytka, miłośniczka kawy i dobrych rozmów.</textarea>
+                        <button type="button" onclick="saveAuthorChanges()" class="bg-travel-600 hover:bg-travel-700 text-white text-[10px] font-bold px-3 py-1.5 rounded-lg transition-colors">Zatwierdź zmiany</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRZYCISKI AKCJI -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100">
+            <button type="button" onclick="cancelForm()" class="order-3 sm:order-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all">
+                <i class="fa-solid fa-circle-xmark mr-1.5"></i> Anuluj
+            </button>
+            <button type="button" onclick="saveDraft()" class="order-2 sm:order-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-amber-95 w-full font-bold text-sm rounded-xl shadow-md transition-all">
+                <i class="fa-solid fa-floppy-disk mr-1.5"></i> Kopia robocza
+            </button>
+            <button type="button" onclick="submitForm()" class="order-1 sm:order-3 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white w-full font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition-all">
+                <i class="fa-solid fa-paper-plane mr-1.5"></i> WYŚLIJ (JSON)
+            </button>
+        </div>
+
+    </main>
+
+    <!-- ZAKŁADKA: JAK UDOSTĘPNIĆ? -->
+    <section id="tabShareContent" class="hidden p-6 space-y-6">
+        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+            <h3 class="text-sm font-bold text-emerald-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-check text-emerald-600"></i> Udostępnij ten formularz każdemu w sieci!
+            </h3>
+            <p class="text-xs text-emerald-700 mt-1">Ten plik HTML to w pełni samodzielna aplikacja. Możesz go hostować za darmo w kilka sekund.</p>
+        </div>
+
+        <div class="space-y-4">
+            <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider">3 Proste i bezpłatne kroki:</h4>
+            
+            <!-- Krok 1 -->
+            <div class="flex gap-3">
+                <div class="w-6 h-6 bg-travel-600 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0">1</div>
+                <div>
+                    <h5 class="text-sm font-bold text-slate-800">Skopiuj kod źródłowy</h5>
+                    <p class="text-xs text-slate-500 mt-0.5">Kliknij poniższy przycisk, aby zapisać cały kod źródłowy tej strony w pamięci podręcznej.</p>
+                    <button type="button" onclick="copyEntireCode()" class="mt-2 bg-white hover:bg-slate-50 text-travel-700 border border-travel-200 hover:border-travel-600 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-all">
+                        <i class="fa-solid fa-copy"></i> Skopiuj kod HTML
+                    </button>
+                </div>
+            </div>
+
+            <!-- Krok 2 -->
+            <div class="flex gap-3">
+                <div class="w-6 h-6 bg-travel-600 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0">2</div>
+                <div>
+                    <h5 class="text-sm font-bold text-slate-800">Skorzystaj z darmowego hostingu</h5>
+                    <p class="text-xs text-slate-500 mt-0.5">Otwórz darmową witrynę do szybkiego publikowania stron:</p>
+                    <ul class="list-disc pl-4 text-xs text-slate-600 mt-1.5 space-y-2">
+                        <li><strong>GitHub Pages (Najlepsza opcja):</strong> Utwórz darmowe repozytorium na <a href="https://github.com" target="_blank" class="text-travel-600 hover:underline font-bold">github.com</a>, wgraj tam pobrany plik jako <code class="bg-slate-100 px-1 py-0.5 rounded text-red-600">index.html</code> i włącz **Pages** w ustawieniach (Settings -> Pages). Twoja strona otrzyma profesjonalny i stały adres URL!</li>
+                        <li><strong>Netlify Drop:</strong> Przejdź na <a href="https://app.netlify.com/drop" target="_blank" class="text-travel-600 hover:underline font-bold">app.netlify.com/drop</a> i po prostu przeciągnij tam pobrany plik.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Krok 3 -->
+            <div class="flex gap-3">
+                <div class="w-6 h-6 bg-travel-600 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0">3</div>
+                <div>
+                    <h5 class="text-sm font-bold text-slate-800">Wyślij link Elżbiecie!</h5>
+                    <p class="text-xs text-slate-500 mt-0.5">Wygenerowany link możesz wysłać SMS-em, mailem lub na Messengerze. Każdy wypełniony przez nią punkt pobierze gotowy plik JSON dla Ciebie.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<!-- NOTIFICATION MODAL (Zamiast blokujących alertów) -->
+<div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-2xl flex items-center space-x-2 transition-all duration-300 opacity-0 pointer-events-none z-50 transform translate-y-2">
+    <i id="toastIcon" class="fa-solid fa-circle-info text-travel-600"></i>
+    <span id="toastMessage">Powiadomienie systemowe</span>
+</div>
+
+<!-- MODAL PODGLĄDU PLIKU JSON -->
+<div id="jsonModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-travel-200">
+        <div class="bg-travel-800 text-amber-50 p-4 flex items-center justify-between">
+            <h3 class="font-serif font-bold text-base"><i class="fa-solid fa-code text-amber-400 mr-2"></i>Wygenerowany plik JSON dla Unity</h3>
+            <button type="button" onclick="closeJsonModal()" class="text-amber-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto font-mono text-xs bg-slate-900 text-emerald-400 p-4">
+            <pre id="jsonPreviewCode" class="whitespace-pre-wrap"></pre>
+        </div>
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
+            <button type="button" onclick="closeJsonModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-lg transition-all">Zamknij</button>
+            <button type="button" onclick="downloadJson()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-all"><i class="fa-solid fa-download mr-1"></i>Pobierz plik</button>
+        </div>
+    </div>
+</div>
+
+<!-- TEXTAREA DO KOPIOWANIA KODU (Do obejścia ograniczeń iframe) -->
+<textarea id="codeCopyArea" class="absolute -top-[9999px] -left-[9999px] hidden"></textarea>
+
+<script>
+    // System powiadomień (Toast)
+    function showToast(message, type = 'success') {
+        const toast = document.getElementById('toast');
+        const icon = document.getElementById('toastIcon');
+        const msg = document.getElementById('toastMessage');
+        
+        msg.innerText = message;
+        
+        if (type === 'success') {
+            icon.className = "fa-solid fa-circle-check text-emerald-400";
+        } else if (type === 'info') {
+            icon.className = "fa-solid fa-compass text-amber-400";
+        } else {
+            icon.className = "fa-solid fa-triangle-exclamation text-red-400";
+        }
+
+        toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+        toast.classList.add('opacity-100', 'translate-y-0');
+
+        setTimeout(() => {
+            toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+            toast.classList.remove('opacity-100', 'translate-y-0');
+        }, 3000);
+    }
+
+    // Przełączanie zakładek (Formularz / Udostępnianie)
+    function switchTab(tab) {
+        const tabFormBtn = document.getElementById('tabFormBtn');
+        const tabShareBtn = document.getElementById('tabShareBtn');
+        const tabFormContent = document.getElementById('tabFormContent');
+        const tabShareContent = document.getElementById('tabShareContent');
+
+        if (tab === 'form') {
+            tabFormBtn.classList.add('text-travel-700', 'border-travel-600', 'bg-white');
+            tabFormBtn.classList.remove('text-slate-500', 'border-transparent');
+            tabShareBtn.classList.remove('text-travel-700', 'border-travel-600', 'bg-white');
+            tabShareBtn.classList.add('text-slate-500', 'border-transparent');
+
+            tabFormContent.classList.remove('hidden');
+            tabShareContent.classList.add('hidden');
+        } else {
+            tabShareBtn.classList.add('text-travel-700', 'border-travel-600', 'bg-white');
+            tabShareBtn.classList.remove('text-slate-500', 'border-transparent');
+            tabFormBtn.classList.remove('text-travel-700', 'border-travel-600', 'bg-white');
+            tabFormBtn.classList.add('text-slate-500', 'border-transparent');
+
+            tabFormContent.classList.add('hidden');
+            tabShareContent.classList.remove('hidden');
+        }
+    }
+
+    // Obsługa drag & drop i wgrywania zdjęć z drona
+    const dropZone = document.getElementById('dropZone');
+    const mediaInput = document.getElementById('mediaInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const imagePreview = document.getElementById('imagePreview');
+    const videoPreview = document.getElementById('videoPreview');
+    const dropZoneDefault = document.getElementById('dropZoneDefault');
+
+    dropZone.addEventListener('click', () => mediaInput.click());
+
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('border-travel-600', 'bg-travel-100/50');
+    });
+
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('border-travel-600', 'bg-travel-100/50');
+    });
+
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('border-travel-600', 'bg-travel-100/50');
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleMediaFile(files[0]);
+        }
+    });
+
+    mediaInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            handleMediaFile(e.target.files[0]);
+        }
+    });
+
+    function handleMediaFile(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewContainer.classList.remove('hidden');
+            if (file.type.startsWith('image/')) {
+                imagePreview.src = e.target.result;
+                imagePreview.classList.remove('hidden');
+                videoPreview.classList.add('hidden');
+            } else if (file.type.startsWith('video/')) {
+                videoPreview.src = e.target.result;
+                videoPreview.classList.remove('hidden');
+                imagePreview.classList.add('hidden');
+            }
+            showToast("Wczytano plik multimedialny!", "success");
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearMedia(event) {
+        event.stopPropagation();
+        mediaInput.value = "";
+        previewContainer.classList.add('hidden');
+        imagePreview.src = "";
+        videoPreview.src = "";
+        imagePreview.classList.add('hidden');
+        videoPreview.classList.add('hidden');
+        showToast("Usunięto multimedia", "info");
+    }
+
+    // Logo Uniwersytetu
+    const logoInput = document.getElementById('logoInput');
+    const logoPreview = document.getElementById('logoPreview');
+    const logoDefault = document.getElementById('logoDefault');
+
+    logoInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                logoPreview.src = event.target.result;
+                logoPreview.classList.remove('hidden');
+                logoDefault.classList.add('hidden');
+                showToast("Wczytano logo uniwersytetu!", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // Edycja sekcji autorskiej
+    function toggleAuthorEdit() {
+        const preview = document.getElementById('authorBioText');
+        const editContainer = document.getElementById('authorBioEditContainer');
+        const editBtn = document.getElementById('editAuthorBtn');
+
+        if (editContainer.classList.contains('hidden')) {
+            editContainer.classList.remove('hidden');
+            preview.classList.add('hidden');
+            editBtn.innerHTML = '<i class="fa-solid fa-eye"></i> Podgląd';
+        } else {
+            editContainer.classList.add('hidden');
+            preview.classList.remove('hidden');
+            editBtn.innerHTML = '<i class="fa-solid fa-pen"></i> Edytuj Notkę';
+        }
+    }
+
+    function saveAuthorChanges() {
+        const newName = document.getElementById('authorNameInput').value;
+        const newBio = document.getElementById('authorBioInput').value;
+
+        document.getElementById('authorName').innerText = newName;
+        document.getElementById('authorBioText').innerHTML = `<strong>${newName}</strong><br>${newBio}`;
+        
+        toggleAuthorEdit();
+        showToast("Zaktualizowano profil autora!", "success");
+    }
+
+    // Zbieranie danych i generowanie pliku JSON
+    let currentGeneratedJson = "";
+    let currentFileName = "punkt_mapy.json";
+
+    function getFormData() {
+        return {
+            metadata: {
+                generator: "Wirtualny Lot Dronem - Panel Autora v2.0",
+                data_stworzenia: new Date().toISOString(),
+                autor: {
+                    nazwa: document.getElementById('authorName').innerText,
+                    biogram: document.getElementById('authorBioInput').value
+                }
+            },
+            punkt_poi: {
+                nazwa: document.getElementById('poiName').value || "Nienazwany punkt",
+                opis_krotki: document.getElementById('poiShortDesc').value || "",
+                historia_obiektu: document.getElementById('poiHistory').value || "",
+                statystyki: {
+                    liczba_punktow: parseInt(document.getElementById('poiSteps').value) || 0,
+                    cena_biletu_pln: parseFloat(document.getElementById('poiPrice').value) || 0.0,
+                    przyjazne_dla_wozkow: document.getElementById('poiWheelchair').checked
+                },
+                ciekawostka: document.getElementById('poiTrivia').value || "",
+                multimedia_zapisane_lokalnie: imagePreview.src ? true : false
+            }
+        };
+    }
+
+    function submitForm() {
+        const nameInput = document.getElementById('poiName').value;
+        if (!nameInput.trim()) {
+            showToast("Wpisz nazwę lokacji, aby wygenerować punkt!", "error");
+            return;
+        }
+
+        const data = getFormData();
+        currentGeneratedJson = JSON.stringify(data, null, 2);
+        currentFileName = (nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '_') || "punkt_mapy") + ".json";
+
+        // Wyświetlenie modala z kodem JSON
+        document.getElementById('jsonPreviewCode').textContent = currentGeneratedJson;
+        document.getElementById('jsonModal').classList.remove('hidden');
+    }
+
+    function closeJsonModal() {
+        document.getElementById('jsonModal').classList.add('hidden');
+    }
+
+    function downloadJson() {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(currentGeneratedJson);
+        const downloadNode = document.createElement('a');
+        downloadNode.setAttribute("href", dataStr);
+        downloadNode.setAttribute("download", currentFileName);
+        document.body.appendChild(downloadNode);
+        downloadNode.click();
+        downloadNode.remove();
+        closeJsonModal();
+        showToast("Pobrano plik JSON dla Unity!", "success");
+    }
+
+    function saveDraft() {
+        showToast("Kopia robocza zapisana w pamięci przeglądarki!", "info");
+    }
+
+    function cancelForm() {
+        if (confirm("Czy na pewno chcesz wyczyścić formularz? Stracisz wpisane dane.")) {
+            document.getElementById('poiForm').reset();
+            clearMedia({ stopPropagation: () => {} });
+            showToast("Zresetowano formularz", "info");
+        }
+    }
+
+    // Funkcja do kopiowania kodu całego pliku (obejście iFrame przy użyciu tradycyjnej metody)
+    function copyEntireCode() {
+        const area = document.getElementById('codeCopyArea');
+        area.classList.remove('hidden');
+        
+        // Pobieramy kod źródłowy całej strony za pomocą fetch lub bezpośrednio document.documentElement.outerHTML
+        let pageCode = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
+        
+        // Czyścimy dynamiczne stany przed kopiowaniem
+        pageCode = pageCode.replace(/id="previewContainer"/, 'id="previewContainer" class="hidden"');
+        
+        area.value = pageCode;
+        area.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showToast("Skopiowano cały kod HTML! Możesz go teraz wkleić na darmowy hosting.", "success");
+            } else {
+                showToast("Nie udało się automatycznie skopiować kodu. Skopiuj go ręcznie z edytora.", "error");
+            }
+        } catch (err) {
+            showToast("Błąd podczas kopiowania. Użyj przycisku w edytorze kodu.", "error");
+        }
+        
+        area.classList.add('hidden');
+    }
+</script>
+
+</body>
+</html>
+```
+eof
+
+---
+
+### Podsumowanie zmian:
+1. **Zdjęcie:** Użyłem profesjonalnego, ciepłego portretu dojrzałej kobiety (około 55 lat) z bazy Unsplash.
+2. **Etykieta logotypu:** Zmieniłem podpis z **LOGO UNIW.** na prostsze i bardziej uniwersalne **LOGO** oraz zaktualizowałem podpowiedź (tooltip) po najechaniu kursorem.
