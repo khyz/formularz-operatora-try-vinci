@@ -5,8 +5,7 @@
     Wszelkie prawa zastrzeżone. 
     Kopiowanie, dystrybucja, modyfikacja i wykorzystywanie kodu źródłowego 
     bez wyraźnej zgody właściciela są zabronione.
--->
-<!DOCTYPE html>
+--><!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
@@ -14,8 +13,10 @@
     <title>Kreator Punktów Mapy - Wirtualne Podróże Dronem</title>
     <!-- Tailwind CSS dla nowoczesnego i responsywnego designu -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- JSZip do pakowania JSON oraz plików multimedialnych na poziomie przeglądarki -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <!-- Google Fonts: Inter i Playfair Display dla turystyczno-dziennikarskiego klimatu -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Font Awesome dla ikon turystycznych, kompasu, wózków inwalidzkich itp. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -289,14 +290,14 @@
 
         <!-- PRZYCISKI AKCJI -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100">
-            <button type="button" onclick="cancelForm()" class="order-3 sm:order-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all">
+            <button type="button" onclick="showCancelConfirmation()" class="order-3 sm:order-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all">
                 <i class="fa-solid fa-circle-xmark mr-1.5"></i> Anuluj
             </button>
             <button type="button" id="draftBtn" disabled onclick="saveDraft()" class="order-2 sm:order-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-amber-95 w-full font-bold text-sm rounded-xl shadow-md transition-all opacity-40 cursor-not-allowed">
                 <i class="fa-solid fa-floppy-disk mr-1.5"></i> Kopia robocza
             </button>
             <button type="button" id="submitBtn" disabled onclick="submitForm()" class="order-1 sm:order-3 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white w-full font-bold text-sm rounded-xl shadow-lg transition-all opacity-40 cursor-not-allowed">
-                <i class="fa-solid fa-paper-plane mr-1.5"></i> WYŚLIJ (JSON)
+                <i class="fa-solid fa-paper-plane mr-1.5"></i> WYŚLIJ (ZIP)
             </button>
         </div>
 
@@ -310,19 +311,46 @@
     <span id="toastMessage">Powiadomienie systemowe</span>
 </div>
 
-<!-- MODAL PODGLĄDU PLIKU JSON -->
+<!-- MODAL PODGLĄDU PLIKU JSON I PACZKI ZIP -->
 <div id="jsonModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
     <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-travel-200">
         <div class="bg-travel-800 text-amber-50 p-4 flex items-center justify-between">
-            <h3 class="font-serif font-bold text-base"><i class="fa-solid fa-code text-amber-400 mr-2"></i>Wygenerowany plik JSON dla Unity</h3>
+            <h3 class="font-serif font-bold text-base"><i class="fa-solid fa-file-zipper text-amber-400 mr-2"></i>Paczka zasobów dla Unity (.ZIP)</h3>
             <button type="button" onclick="closeJsonModal()" class="text-amber-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
         </div>
-        <div class="p-4 flex-1 overflow-y-auto font-mono text-xs bg-slate-900 text-emerald-400 p-4">
+        <div class="p-4 bg-slate-50 border-b border-slate-100 text-xs text-slate-600">
+            <p class="font-semibold text-slate-800 mb-1"><i class="fa-solid fa-circle-info text-travel-600 mr-1"></i> Co znajdzie się w paczce ZIP:</p>
+            <ul class="list-disc pl-5 space-y-1 mt-1 text-[11px]">
+                <li><code class="text-emerald-700 font-bold font-mono" id="zipJsonName">punkt_mapy.json</code> (Plik struktury danych)</li>
+                <li id="zipMediaInfo" class="hidden">Załączony plik multimedialny drona</li>
+                <li id="zipAvatarInfo" class="hidden">Własne zdjęcie autora</li>
+                <li id="zipLogoInfo" class="hidden">Wgrane logo uniwersytetu</li>
+            </ul>
+        </div>
+        <div class="p-4 flex-1 overflow-y-auto font-mono text-xs bg-slate-900 text-emerald-400">
+            <div class="text-slate-400 text-[10px] uppercase font-bold tracking-wider mb-2 border-b border-slate-800 pb-1">Podgląd pliku JSON:</div>
             <pre id="jsonPreviewCode" class="whitespace-pre-wrap"></pre>
         </div>
         <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-2">
             <button type="button" onclick="closeJsonModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-lg transition-all">Zamknij</button>
-            <button type="button" onclick="downloadJson()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-all"><i class="fa-solid fa-download mr-1"></i>Pobierz plik</button>
+            <button type="button" onclick="downloadZipArchive()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg transition-all"><i class="fa-solid fa-file-zipper mr-1"></i>Pobierz paczkę ZIP</button>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ANULOWANIA FORMULARZA (Zastępuje standardowe confirm) -->
+<div id="confirmCancelModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-travel-200 text-center space-y-4">
+        <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto text-amber-600 text-xl">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+        <div>
+            <h4 class="font-serif font-bold text-lg text-slate-800">Wyczyścić formularz?</h4>
+            <p class="text-xs text-slate-500 mt-1">Stracisz wszystkie wpisane dane i załączone pliki. Tej operacji nie można cofnąć.</p>
+        </div>
+        <div class="flex gap-2 justify-center pt-2">
+            <button type="button" onclick="closeCancelConfirmation()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-lg transition-all">Wróć</button>
+            <button type="button" onclick="confirmResetForm()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition-all">Tak, wyczyść</button>
         </div>
     </div>
 </div>
@@ -441,6 +469,11 @@
 </div>
 
 <script>
+    // Globalny stan załączanych plików
+    let poiMediaFile = null;
+    let authorAvatarFile = null;
+    let logoFile = null;
+
     // Flaga śledząca czy użytkownik otworzył i przewinął politykę prywatności
     let hasReadPolicy = false;
 
@@ -472,7 +505,6 @@
     // Obsługa Polityki Prywatności Modala
     function openPolicyModal() {
         document.getElementById('policyModal').classList.remove('hidden');
-        // Reset scroll position to top when opening
         document.getElementById('policyContentScroll').scrollTop = 0;
     }
 
@@ -486,7 +518,6 @@
         const confirmBtn = document.getElementById('policyConfirmBtn');
         const statusText = document.getElementById('readStatusText');
 
-        // Sprawdzamy czy użytkownik przewinął blisko samego dołu (z tolerancją 15px)
         const isAtBottom = (scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight) <= 15;
 
         if (isAtBottom) {
@@ -505,7 +536,6 @@
         checkbox.removeAttribute('disabled');
         checkbox.checked = true;
         
-        // Zmień styl i tekst labelki na aktywny
         label.classList.remove('text-slate-500', 'cursor-not-allowed');
         label.classList.add('text-slate-800', 'cursor-pointer');
         label.innerText = "Zaakceptowano oświadczenie i politykę prywatności (Backapp Sp. z o.o.)";
@@ -559,17 +589,19 @@
         dropZone.classList.remove('border-travel-600', 'bg-travel-100/50');
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            handleMediaFile(files[0]);
+            poiMediaFile = files[0];
+            handleMediaDisplay(files[0]);
         }
     });
 
     mediaInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
-            handleMediaFile(e.target.files[0]);
+            poiMediaFile = e.target.files[0];
+            handleMediaDisplay(e.target.files[0]);
         }
     });
 
-    function handleMediaFile(file) {
+    function handleMediaDisplay(file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             previewContainer.classList.remove('hidden');
@@ -582,7 +614,7 @@
                 videoPreview.classList.remove('hidden');
                 imagePreview.classList.add('hidden');
             }
-            showToast("Wczytano plik multimedialny!", "success");
+            showToast(`Wczytano plik: ${file.name}`, "success");
         };
         reader.readAsDataURL(file);
     }
@@ -590,12 +622,13 @@
     function clearMedia(event) {
         event.stopPropagation();
         mediaInput.value = "";
+        poiMediaFile = null;
         previewContainer.classList.add('hidden');
         imagePreview.src = "";
         videoPreview.src = "";
         imagePreview.classList.add('hidden');
         videoPreview.classList.add('hidden');
-        showToast("Usunięto multimedia", "info");
+        showToast("Usunięto multimedia drona", "info");
     }
 
     // Logo Uniwersytetu
@@ -606,12 +639,13 @@
     logoInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
+            logoFile = file;
             const reader = new FileReader();
             reader.onload = function(event) {
                 logoPreview.src = event.target.result;
                 logoPreview.classList.remove('hidden');
                 logoDefault.classList.add('hidden');
-                showToast("Wczytano logo uniwersytetu!", "success");
+                showToast("Wczytano logo uczelni!", "success");
             };
             reader.readAsDataURL(file);
         }
@@ -624,6 +658,7 @@
     authorAvatarInput.addEventListener('change', (e) => {
         if (e.target.files.length > 0) {
             const file = e.target.files[0];
+            authorAvatarFile = file;
             const reader = new FileReader();
             reader.onload = function(event) {
                 authorAvatar.src = event.target.result;
@@ -661,19 +696,20 @@
         showToast("Zaktualizowano profil autora!", "success");
     }
 
-    // Zbieranie danych i generowanie pliku JSON
+    // Zbieranie danych i generowanie pliku JSON (bez wbudowanego binarnego base64)
     let currentGeneratedJson = "";
     let currentFileName = "punkt_mapy.json";
 
     function getFormData() {
         return {
             metadata: {
-                generator: "Wirtualny Lot Dronem - Panel Autora v2.2",
+                generator: "Wirtualny Lot Dronem - Panel Autora v2.2 (Archiwum ZIP)",
                 data_stworzenia: new Date().toISOString(),
                 autor: {
                     nazwa: document.getElementById('authorName').innerText,
                     biogram: document.getElementById('authorBioInput').value,
-                    zdjecie_base64: authorAvatar.src.startsWith('data:image') ? authorAvatar.src : "domyslne"
+                    // Referencja do pliku fizycznego spakowanego w archiwum
+                    zdjecie_plik: authorAvatarFile ? authorAvatarFile.name : "elzbieta_kowalska_domyslne.jpg"
                 },
                 zatwierdzenie_prawne: {
                     zaakceptowano_polityke: document.getElementById('policyCheckbox').checked,
@@ -692,7 +728,9 @@
                     przyjazne_dla_wozkow: document.getElementById('poiWheelchair').checked
                 },
                 ciekawostka: document.getElementById('poiTrivia').value || "",
-                multimedia_zapisane_lokalnie: imagePreview.src ? true : false
+                // Klucze referencyjne do spakowanych obok plików multimedialnych
+                plik_multimediow: poiMediaFile ? poiMediaFile.name : null,
+                plik_logo_uczelni: logoFile ? logoFile.name : null
             }
         };
     }
@@ -714,6 +752,33 @@
         currentGeneratedJson = JSON.stringify(data, null, 2);
         currentFileName = (nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '_') || "punkt_mapy") + ".json";
 
+        // Aktualizacja informacji o elementach paczki ZIP w widoku modala
+        document.getElementById('zipJsonName').innerText = currentFileName;
+        
+        const zipMediaInfo = document.getElementById('zipMediaInfo');
+        if (poiMediaFile) {
+            zipMediaInfo.innerText = `[Plik multimedialny drona] ${poiMediaFile.name}`;
+            zipMediaInfo.classList.remove('hidden');
+        } else {
+            zipMediaInfo.classList.add('hidden');
+        }
+
+        const zipAvatarInfo = document.getElementById('zipAvatarInfo');
+        if (authorAvatarFile) {
+            zipAvatarInfo.innerText = `[Portret autora] ${authorAvatarFile.name}`;
+            zipAvatarInfo.classList.remove('hidden');
+        } else {
+            zipAvatarInfo.classList.add('hidden');
+        }
+
+        const zipLogoInfo = document.getElementById('zipLogoInfo');
+        if (logoFile) {
+            zipLogoInfo.innerText = `[Logo uczelni] ${logoFile.name}`;
+            zipLogoInfo.classList.remove('hidden');
+        } else {
+            zipLogoInfo.classList.add('hidden');
+        }
+
         // Wyświetlenie modala z kodem JSON
         document.getElementById('jsonPreviewCode').textContent = currentGeneratedJson;
         document.getElementById('jsonModal').classList.remove('hidden');
@@ -723,16 +788,48 @@
         document.getElementById('jsonModal').classList.add('hidden');
     }
 
-    function downloadJson() {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(currentGeneratedJson);
-        const downloadNode = document.createElement('a');
-        downloadNode.setAttribute("href", dataStr);
-        downloadNode.setAttribute("download", currentFileName);
-        document.body.appendChild(downloadNode);
-        downloadNode.click();
-        downloadNode.remove();
-        closeJsonModal();
-        showToast("Pobrano plik JSON dla Unity!", "success");
+    function downloadZipArchive() {
+        const zip = new JSZip();
+        
+        // Dodaj plik konfiguracyjny JSON
+        zip.file(currentFileName, currentGeneratedJson);
+        
+        // Dodaj fizyczny plik wideo/foto drona
+        if (poiMediaFile) {
+            zip.file(poiMediaFile.name, poiMediaFile);
+        }
+        
+        // Dodaj fizyczny plik avataru autora
+        if (authorAvatarFile) {
+            zip.file(authorAvatarFile.name, authorAvatarFile);
+        } else {
+            // Jeśli nie zmieniono avatara, możemy opcjonalnie pobrać domyślny z unsplash
+            // Dla prostoty i pełnej niezależności, spakujemy go tylko jeśli użytkownik go spersonalizował.
+        }
+
+        // Dodaj fizyczny plik logo
+        if (logoFile) {
+            zip.file(logoFile.name, logoFile);
+        }
+
+        // Budowanie i pobieranie pliku ZIP
+        showToast("Generowanie paczki ZIP...", "info");
+        
+        zip.generateAsync({type:"blob"}).then(function(content) {
+            const url = window.URL.createObjectURL(content);
+            const downloadNode = document.createElement('a');
+            downloadNode.setAttribute("href", url);
+            downloadNode.setAttribute("download", currentFileName.replace(".json", "") + "_unity_asset.zip");
+            document.body.appendChild(downloadNode);
+            downloadNode.click();
+            downloadNode.remove();
+            window.URL.revokeObjectURL(url);
+            
+            closeJsonModal();
+            showToast("Pobrano paczkę ZIP dla Unity!", "success");
+        }).catch(function(err) {
+            showToast("Błąd kompilacji ZIP: " + err.message, "error");
+        });
     }
 
     function saveDraft() {
@@ -743,30 +840,54 @@
         showToast("Kopia robocza zapisana w pamięci przeglądarki!", "info");
     }
 
-    function cancelForm() {
-        if (confirm("Czy na pewno chcesz wyczyścić formularz? Stracisz wpisane dane.")) {
-            document.getElementById('poiName').value = "";
-            document.getElementById('poiShortDesc').value = "";
-            document.getElementById('poiHistory').value = "";
-            document.getElementById('poiSteps').value = "1200";
-            document.getElementById('poiPrice').value = "0.00";
-            document.getElementById('poiWheelchair').checked = false;
-            document.getElementById('poiTrivia').value = "";
-            
-            clearMedia({ stopPropagation: () => {} });
-            
-            // Zresetuj politykę
-            hasReadPolicy = false;
-            const checkbox = document.getElementById('policyCheckbox');
-            checkbox.checked = false;
-            checkbox.setAttribute('disabled', 'true');
-            const label = document.getElementById('policyCheckboxLabel');
-            label.className = "text-xs text-slate-500 font-medium cursor-not-allowed select-none";
-            label.innerText = "Najpierw otwórz i przeczytaj oświadczenie i politykę prywatności, aby odblokować akceptację.";
-            
-            toggleFormButtons();
-            showToast("Zresetowano formularz", "info");
-        }
+    // Autorskie zastępstwo dla standardowego confirm()
+    function showCancelConfirmation() {
+        document.getElementById('confirmCancelModal').classList.remove('hidden');
+    }
+
+    function closeCancelConfirmation() {
+        document.getElementById('confirmCancelModal').classList.add('hidden');
+    }
+
+    function confirmResetForm() {
+        // Wyczyść pola tekstowe
+        document.getElementById('poiName').value = "";
+        document.getElementById('poiShortDesc').value = "";
+        document.getElementById('poiHistory').value = "";
+        document.getElementById('poiSteps').value = "1200";
+        document.getElementById('poiPrice').value = "0.00";
+        document.getElementById('poiWheelchair').checked = false;
+        document.getElementById('poiTrivia').value = "";
+        
+        // Wyczyść pliki
+        poiMediaFile = null;
+        authorAvatarFile = null;
+        logoFile = null;
+        
+        mediaInput.value = "";
+        logoInput.value = "";
+        authorAvatarInput.value = "";
+
+        // Przywróć grafiki domyślne
+        previewContainer.classList.add('hidden');
+        imagePreview.src = "";
+        videoPreview.src = "";
+        logoPreview.classList.add('hidden');
+        logoDefault.classList.remove('hidden');
+        authorAvatar.src = "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120";
+
+        // Zresetuj politykę prywatności
+        hasReadPolicy = false;
+        const checkbox = document.getElementById('policyCheckbox');
+        checkbox.checked = false;
+        checkbox.setAttribute('disabled', 'true');
+        const label = document.getElementById('policyCheckboxLabel');
+        label.className = "text-xs text-slate-500 font-medium cursor-not-allowed select-none";
+        label.innerText = "Najpierw otwórz i przeczytaj oświadczenie i politykę prywatności, aby odblokować akceptację.";
+        
+        toggleFormButtons();
+        closeCancelConfirmation();
+        showToast("Wyczyszczono formularz", "info");
     }
 </script>
 
