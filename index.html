@@ -5,9 +5,7 @@
     Wszelkie prawa zastrzeżone. 
     Kopiowanie, dystrybucja, modyfikacja i wykorzystywanie kodu źródłowego 
     bez wyraźnej zgody właściciela są zabronione.
--->
-<html lang="pl">
-<!DOCTYPE html>
+--><!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
@@ -81,7 +79,7 @@
             <i class="fa-solid fa-compass text-[12rem] rotate-12"></i>
         </div>
         <div class="relative z-10">
-            <span class="text-xs font-semibold tracking-widest text-amber-300 uppercase block mb-1">Panel Administracyjny v2.0</span>
+            <span class="text-xs font-semibold tracking-widest text-amber-300 uppercase block mb-1">Panel Administracyjny v2.1</span>
             <h1 class="text-2xl md:text-3xl font-serif font-bold tracking-tight">Wirtualny Lot Dronem</h1>
             <p class="text-xs text-amber-100/80 mt-1">Narzędzie do strukturyzacji punktów POI dla silnika Unity</p>
         </div>
@@ -268,15 +266,37 @@
             </div>
         </div>
 
+        <!-- SEKCJA: POLITYKA PRZETWARZANIA DANYCH I OŚWIADCZENIA -->
+        <div class="border border-red-200 bg-red-50/30 rounded-2xl p-4 space-y-3">
+            <span class="text-xs font-bold uppercase tracking-wider text-red-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-gavel"></i> Warunki Prawne & Prywatność
+            </span>
+            <p class="text-xs text-slate-600 leading-relaxed">
+                Aby móc przesłać formularz i wygenerować plik assetu dla Unity, musisz zapoznać się z pełną treścią oświadczeń prawnych i polityki prywatności oraz ją zaakceptować.
+            </p>
+            <div class="flex flex-col gap-2">
+                <button type="button" onclick="openPolicyModal()" class="w-full bg-white hover:bg-slate-100 border border-red-200 text-red-800 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-all shadow-xs">
+                    <i class="fa-solid fa-file-shield text-base text-red-600"></i> Otwórz i przeczytaj dokument prawny
+                </button>
+                
+                <div class="flex items-start gap-2.5 mt-2 bg-white/70 p-3 rounded-xl border border-slate-100">
+                    <input type="checkbox" id="policyCheckbox" disabled onchange="toggleFormButtons()" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-red-600 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <label for="policyCheckbox" id="policyCheckboxLabel" class="text-xs text-slate-500 font-medium cursor-not-allowed select-none">
+                        Najpierw otwórz i przeczytaj oświadczenie i politykę prywatności, aby odblokować akceptację.
+                    </label>
+                </div>
+            </div>
+        </div>
+
         <!-- PRZYCISKI AKCJI -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-100">
             <button type="button" onclick="cancelForm()" class="order-3 sm:order-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm rounded-xl transition-all">
                 <i class="fa-solid fa-circle-xmark mr-1.5"></i> Anuluj
             </button>
-            <button type="button" onclick="saveDraft()" class="order-2 sm:order-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-amber-95 w-full font-bold text-sm rounded-xl shadow-md transition-all">
+            <button type="button" id="draftBtn" disabled onclick="saveDraft()" class="order-2 sm:order-2 px-4 py-3 bg-amber-500 hover:bg-amber-600 text-amber-95 w-full font-bold text-sm rounded-xl shadow-md transition-all opacity-40 cursor-not-allowed">
                 <i class="fa-solid fa-floppy-disk mr-1.5"></i> Kopia robocza
             </button>
-            <button type="button" onclick="submitForm()" class="order-1 sm:order-3 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white w-full font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition-all">
+            <button type="button" id="submitBtn" disabled onclick="submitForm()" class="order-1 sm:order-3 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white w-full font-bold text-sm rounded-xl shadow-lg transition-all opacity-40 cursor-not-allowed">
                 <i class="fa-solid fa-paper-plane mr-1.5"></i> WYŚLIJ (JSON)
             </button>
         </div>
@@ -356,10 +376,126 @@
     </div>
 </div>
 
+<!-- MODAL POLITYKI PRZETWARZANIA DANYCH I OŚWIADCZENIA -->
+<div id="policyModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-white rounded-3xl max-w-lg w-full max-h-[90vh] flex flex-col overflow-hidden shadow-2xl border border-red-200">
+        <div class="bg-red-850 bg-gradient-to-r from-red-900 to-red-800 text-amber-50 p-4 flex items-center justify-between border-b border-red-700">
+            <h3 class="font-serif font-bold text-base"><i class="fa-solid fa-file-shield text-amber-400 mr-2"></i>Dokument Prawny & Oświadczenie</h3>
+            <button type="button" onclick="closePolicyModal()" class="text-amber-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        <div id="policyContentScroll" onscroll="checkPolicyScroll()" class="p-5 flex-1 overflow-y-auto text-xs text-slate-700 leading-relaxed space-y-4 bg-slate-50/50">
+            <h4 class="font-bold text-sm text-center text-slate-800 uppercase">
+                OŚWIADCZENIE<br>
+                I POLITYKA PRZETWARZANIA DANYCH PRZEKAZYWANYCH ZA POŚREDNICTWEM<br>
+                FORMULARZA INTERNETOWEGO
+            </h4>
+            <p class="text-center font-semibold text-slate-500">Wersja 1.0</p>
+            
+            <div class="space-y-2">
+                <p class="font-bold text-slate-800">§ 1. Administrator danych</p>
+                <p>Administratorem danych osobowych oraz wszelkich treści przekazywanych za pośrednictwem niniejszego formularza jest: <strong>Backapp Spółka z ograniczoną odpowiedzialnością</strong> z siedzibą we Wrocławiu (50-203), ul. ROMANA DMOWSKIEGO 19A/2 (dalej: „Administrator" lub „Spółka").</p>
+            </div>
+
+            <div class="space-y-2">
+                <p class="font-bold text-slate-800">§ 2. Oświadczenia użytkownika dotyczące danych i treści</p>
+                <p>Wypełniając niniejszy formularz i przesyłając go Administratorowi, użytkownik oświadcza, że:</p>
+                <p class="font-semibold text-slate-850 mt-1">2.1. Samodzielne wprowadzenie danych</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>wszelkie dane wpisane w formularzu zostały wprowadzone samodzielnie, dobrowolnie i świadomie przez użytkownika;</li>
+                    <li>dane te są zgodne z jego najlepszą wiedzą i zostały przez niego zweryfikowane przed przesłaniem formularza;</li>
+                    <li>użytkownik ponosi pełną odpowiedzialność za prawdziwość, aktualność i kompletność podanych informacji.</li>
+                </ul>
+                <p class="font-semibold text-slate-850 mt-1">2.2. Prawa do zdjęć i materiałów graficznych</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>użytkownik jest twórcą lub uprawnionym posiadaczem wszelkich praw do zdjęć i materiałów graficznych zamieszczonych w formularzu;</li>
+                    <li>zdjęcia oraz materiały graficzne nie naruszają praw autorskich, praw do wizerunku ani innych praw osób trzecich;</li>
+                    <li>użytkownik uzyskał wszelkie niezbędne zgody osób przedstawionych na zdjęciach lub wizerunkach (o ile dotyczy).</li>
+                </ul>
+                <p class="font-semibold text-slate-850 mt-1">2.3. Samodzielne sporządzenie tekstów</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>wszelkie teksty, opisy i inne treści słowne zamieszczone w formularzu zostały samodzielnie sporządzone przez użytkownika lub użytkownik jest ich uprawnionym dysponentem;</li>
+                    <li>treści te nie naruszają praw autorskich ani dóbr osobistych osób trzecich;</li>
+                    <li>treści nie zawierają informacji nieprawdziwych, wprowadzających w błąd ani naruszających przepisy prawa.</li>
+                </ul>
+            </div>
+
+            <div class="space-y-2">
+                <p class="font-bold text-slate-800">§ 3. Przeniesienie praw majątkowych i udzielenie licencji</p>
+                <p>Z chwilą przesłania formularza użytkownik:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>nieodpłatnie przenosi na Administratora – tj. Backapp Sp. z o.o. z siedzibą we Wrocławiu – autorskie prawa majątkowe do wszystkich przekazanych treści (teksty, zdjęcia, materiały graficzne i inne), bez ograniczeń terytorialnych i czasowych;</li>
+                    <li>udziela Administratorowi niewyłącznego prawa do wykonywania i zezwalania na wykonywanie praw zależnych do przekazanych treści;</li>
+                    <li>wyraża zgodę na modyfikowanie, adaptowanie, tłumaczenie, łączenie z innymi treściami, publikowanie, dystrybucję i komercyjne wykorzystanie przekazanych materiałów na wszystkich znanych polach eksploatacji, w tym w szczególności wskazanych w art. 50 ustawy z dnia 4 lutego 1994 r. o prawie autorskim i prawach pokrewnych (t.j. Dz.U. 2022 poz. 2509 ze zm.).</li>
+                </ul>
+                <p class="mt-2">Przeniesienie praw obejmuje w szczególności następujące pola eksploatacji:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>utrwalanie i zwielokrotnianie treści – wytwarzanie egzemplarzy wszelkimi technikami;</li>
+                    <li>wprowadzanie do obrotu, użyczanie lub najem oryginału albo egzemplarzy;</li>
+                    <li>publiczne wykonanie, wystawienie, wyświetlanie, odtwarzanie oraz nadawanie;</li>
+                    <li>udostępnianie w sieci Internet i innych sieciach komputerowych.</li>
+                </ul>
+                <p class="mt-2">Autorskie prawa osobiste użytkownika (m.in. prawo do autorstwa i integralności utworu) pozostają nienaruszalne zgodnie z art. 16 ustawy o prawie autorskim i prawach pokrewnych. Użytkownik upoważnia jednak Administratora do korzystania z przekazanych treści bez oznaczania ich imieniem i nazwiskiem lub pseudonimem autora, o ile Administrator uzna to za stosowne.</p>
+            </div>
+
+            <div class="space-y-2">
+                <p class="font-bold text-slate-800">§ 4. Przetwarzanie danych osobowych (RODO)</p>
+                <p>Podstawa prawna: art. 6 ust. 1 lit. a) i b) Rozporządzenia Parlamentu Europejskiego i Rady (UE) 2016/679 z dnia 27 kwietnia 2016 r. (RODO).</p>
+                <p><strong>Cel przetwarzania:</strong> dane osobowe podane w formularzu będą przetwarzane w celu realizacji usługi, odpowiedzi na zapytanie lub zawarcia i wykonania umowy z Administratorem.</p>
+                <p><strong>Okres przechowywania:</strong> dane będą przechowywane przez okres niezbędny do realizacji ww. celów, a następnie przez czas wynikający z przepisów prawa (m.in. przepisów podatkowych i archiwizacyjnych).</p>
+                <p class="mt-2">Użytkownikowi przysługują następujące prawa:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>prawo dostępu do danych (art. 15 RODO);</li>
+                    <li>prawo do sprostowania danych (art. 16 RODO);</li>
+                    <li>prawo do usunięcia danych (art. 17 RODO);</li>
+                    <li>prawo do ograniczenia przetwarzania (art. 18 RODO);</li>
+                    <li>prawo do przenoszenia danych (art. 20 RODO);</li>
+                    <li>prawo do cofnięcia zgody w dowolnym momencie (bez wpływu na zgodność z prawem przetwarzania sprzed cofnięcia);</li>
+                    <li>prawo wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (ul. Stawki 2, 00-193 Warszawa).</li>
+                </ul>
+                <p class="mt-2">Dane osobowe nie będą przekazywane do państw trzecich ani organizacji międzynarodowych, chyba że odrębna informacja stanowi inaczej. Dane nie będą przedmiotem zautomatyzowanego podejmowania decyzji ani profilowania w rozumieniu art. 22 RODO.</p>
+            </div>
+
+            <div class="space-y-2">
+                <p class="font-bold text-slate-800">§ 5. Skutki przesłania formularza – podsumowanie</p>
+                <p>Przesyłając formularz, użytkownik:</p>
+                <ul class="list-disc pl-4 space-y-1">
+                    <li>potwierdza zapoznanie się z niniejszą polityką i akceptuje jej postanowienia;</li>
+                    <li>wyraża zgodę na przetwarzanie danych osobowych zgodnie z § 4;</li>
+                    <li>potwierdza prawdziwość złożonych oświadczeń dotyczących autorstwa i praw do treści;</li>
+                    <li>przenosi autorskie prawa majątkowe na Administratora zgodnie z § 3.</li>
+                </ul>
+            </div>
+
+            <div class="space-y-2">
+                <p class="font-bold text-slate-800">§ 6. Postanowienia końcowe</p>
+                <p>Administrator zastrzega sobie prawo do zmiany niniejszej polityki. O istotnych zmianach użytkownicy będą informowani poprzez aktualizację dokumentu dostępnego pod adresem formularza lub w inny stosowny sposób.</p>
+                <p>W sprawach nieuregulowanych niniejszą polityką zastosowanie mają przepisy prawa polskiego, w szczególności ustawy z dnia 4 lutego 1994 r. o prawie autorskim i prawach pokrewnych, Kodeksu cywilnego oraz rozporządzenia RODO.</p>
+                <p>W przypadku pytań dotyczących niniejszej polityki prosimy o kontakt: <strong>[e-mail Administratora]</strong></p>
+                <p class="text-right italic font-semibold mt-4 text-slate-600">Backapp Sp. z o.o. | ul. ROMANA DMOWSKIEGO 19A/2, 50-203 WROCŁAW</p>
+            </div>
+
+            <!-- Znacznik pełnego przeczytania -->
+            <div id="scrollPrompt" class="bg-red-50 text-red-800 font-bold p-3 text-center rounded-xl border border-red-200 sticky bottom-0">
+                <i class="fa-solid fa-arrow-down-long animate-bounce mr-1"></i> Przewiń dokument na sam dół, aby odblokować akceptację!
+            </div>
+        </div>
+        <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-between items-center">
+            <span id="readStatusText" class="text-xs font-bold text-red-600">Należy przeczytać całość</span>
+            <div class="flex gap-2">
+                <button type="button" onclick="closePolicyModal()" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs rounded-lg transition-all">Zamknij</button>
+                <button type="button" id="policyConfirmBtn" disabled onclick="acceptPolicyFromModal()" class="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-xs rounded-lg transition-all"><i class="fa-solid fa-check mr-1"></i>Akceptuję politykę</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- TEXTAREA DO KOPIOWANIA KODU (Do obejścia ograniczeń iframe) -->
 <textarea id="codeCopyArea" class="absolute -top-[9999px] -left-[9999px] hidden"></textarea>
 
 <script>
+    // Flaga śledząca czy użytkownik otworzył i przewinął politykę prywatności
+    let hasReadPolicy = false;
+
     // System powiadomień (Toast)
     function showToast(message, type = 'success') {
         const toast = document.getElementById('toast');
@@ -408,6 +544,72 @@
 
             tabFormContent.classList.add('hidden');
             tabShareContent.classList.remove('hidden');
+        }
+    }
+
+    // Obsługa Polityki Prywatności Modala
+    function openPolicyModal() {
+        document.getElementById('policyModal').classList.remove('hidden');
+        // Reset scroll position to top when opening
+        document.getElementById('policyContentScroll').scrollTop = 0;
+    }
+
+    function closePolicyModal() {
+        document.getElementById('policyModal').classList.add('hidden');
+    }
+
+    function checkPolicyScroll() {
+        const scrollArea = document.getElementById('policyContentScroll');
+        const scrollPrompt = document.getElementById('scrollPrompt');
+        const confirmBtn = document.getElementById('policyConfirmBtn');
+        const statusText = document.getElementById('readStatusText');
+
+        // Sprawdzamy czy użytkownik przewinął blisko samego dołu (z tolerancją 15px)
+        const isAtBottom = (scrollArea.scrollHeight - scrollArea.scrollTop - scrollArea.clientHeight) <= 15;
+
+        if (isAtBottom) {
+            hasReadPolicy = true;
+            scrollPrompt.classList.add('hidden');
+            confirmBtn.removeAttribute('disabled');
+            statusText.innerText = "Zapoznano się z dokumentem";
+            statusText.className = "text-xs font-bold text-emerald-600";
+        }
+    }
+
+    function acceptPolicyFromModal() {
+        const checkbox = document.getElementById('policyCheckbox');
+        const label = document.getElementById('policyCheckboxLabel');
+
+        checkbox.removeAttribute('disabled');
+        checkbox.checked = true;
+        
+        // Zmień styl i tekst labelki na aktywny
+        label.classList.remove('text-slate-500', 'cursor-not-allowed');
+        label.classList.add('text-slate-800', 'cursor-pointer');
+        label.innerText = "Zaakceptowano oświadczenie i politykę prywatności (Backapp Sp. z o.o.)";
+
+        closePolicyModal();
+        toggleFormButtons();
+        showToast("Zaakceptowano politykę prywatności!", "success");
+    }
+
+    function toggleFormButtons() {
+        const isChecked = document.getElementById('policyCheckbox').checked;
+        const submitBtn = document.getElementById('submitBtn');
+        const draftBtn = document.getElementById('draftBtn');
+
+        if (isChecked) {
+            submitBtn.removeAttribute('disabled');
+            submitBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+            
+            draftBtn.removeAttribute('disabled');
+            draftBtn.classList.remove('opacity-40', 'cursor-not-allowed');
+        } else {
+            submitBtn.setAttribute('disabled', 'true');
+            submitBtn.classList.add('opacity-40', 'cursor-not-allowed');
+
+            draftBtn.setAttribute('disabled', 'true');
+            draftBtn.classList.add('opacity-40', 'cursor-not-allowed');
         }
     }
 
@@ -528,11 +730,17 @@
     function getFormData() {
         return {
             metadata: {
-                generator: "Wirtualny Lot Dronem - Panel Autora v2.0",
+                generator: "Wirtualny Lot Dronem - Panel Autora v2.1",
                 data_stworzenia: new Date().toISOString(),
                 autor: {
                     nazwa: document.getElementById('authorName').innerText,
                     biogram: document.getElementById('authorBioInput').value
+                },
+                zatwierdzenie_prawne: {
+                    zaakceptowano_polityke: document.getElementById('policyCheckbox').checked,
+                    data_akceptacji: new Date().toISOString(),
+                    administrator_danych: "Backapp Sp. z o.o., Wrocław",
+                    status_oswiadczenia: "Użytkownik potwierdził autorstwo przekazanych treści oraz przeniósł prawa majątkowe na rzecz Administratora."
                 }
             },
             punkt_poi: {
@@ -551,6 +759,12 @@
     }
 
     function submitForm() {
+        // Dodatkowa twarda walidacja przed uruchomieniem generowania
+        if (!document.getElementById('policyCheckbox').checked) {
+            showToast("Musisz najpierw zaakceptować oświadczenie i politykę prywatności!", "error");
+            return;
+        }
+
         const nameInput = document.getElementById('poiName').value;
         if (!nameInput.trim()) {
             showToast("Wpisz nazwę lokacji, aby wygenerować punkt!", "error");
@@ -583,6 +797,10 @@
     }
 
     function saveDraft() {
+        if (!document.getElementById('policyCheckbox').checked) {
+            showToast("Zapis kopii roboczej wymaga akceptacji polityki prywatności!", "error");
+            return;
+        }
         showToast("Kopia robocza zapisana w pamięci przeglądarki!", "info");
     }
 
@@ -590,6 +808,17 @@
         if (confirm("Czy na pewno chcesz wyczyścić formularz? Stracisz wpisane dane.")) {
             document.getElementById('poiForm').reset();
             clearMedia({ stopPropagation: () => {} });
+            
+            // Zresetuj politykę
+            hasReadPolicy = false;
+            const checkbox = document.getElementById('policyCheckbox');
+            checkbox.checked = false;
+            checkbox.setAttribute('disabled', 'true');
+            const label = document.getElementById('policyCheckboxLabel');
+            label.className = "text-xs text-slate-500 font-medium cursor-not-allowed select-none";
+            label.innerText = "Najpierw otwórz i przeczytaj oświadczenie i politykę prywatności, aby odblokować akceptację.";
+            
+            toggleFormButtons();
             showToast("Zresetowano formularz", "info");
         }
     }
@@ -625,11 +854,3 @@
 
 </body>
 </html>
-```
-eof
-
----
-
-### Podsumowanie zmian:
-1. **Zdjęcie:** Użyłem profesjonalnego, ciepłego portretu dojrzałej kobiety (około 55 lat) z bazy Unsplash.
-2. **Etykieta logotypu:** Zmieniłem podpis z **LOGO UNIW.** na prostsze i bardziej uniwersalne **LOGO** oraz zaktualizowałem podpowiedź (tooltip) po najechaniu kursorem.
