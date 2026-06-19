@@ -5,7 +5,8 @@
     Wszelkie prawa zastrzeżone. 
     Kopiowanie, dystrybucja, modyfikacja i wykorzystywanie kodu źródłowego 
     bez wyraźnej zgody właściciela są zabronione.
---><!DOCTYPE html>
+-->
+<!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
@@ -14,7 +15,7 @@
     <!-- Tailwind CSS dla nowoczesnego i responsywnego designu -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Inter i Playfair Display dla turystyczno-dziennikarskiego klimatu -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght=300;400;500;600;700&family=Playfair+Display:ital,wght=0,600;0,700;1,400&display=swap" rel="stylesheet">
     <!-- Font Awesome dla ikon turystycznych, kompasu, wózków inwalidzkich itp. -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -79,24 +80,14 @@
             <i class="fa-solid fa-compass text-[12rem] rotate-12"></i>
         </div>
         <div class="relative z-10">
-            <span class="text-xs font-semibold tracking-widest text-amber-300 uppercase block mb-1">Panel Administracyjny v2.1</span>
+            <span class="text-xs font-semibold tracking-widest text-amber-300 uppercase block mb-1">Panel Administracyjny v2.2</span>
             <h1 class="text-2xl md:text-3xl font-serif font-bold tracking-tight">Wirtualny Lot Dronem</h1>
             <p class="text-xs text-amber-100/80 mt-1">Narzędzie do strukturyzacji punktów POI dla silnika Unity</p>
         </div>
     </header>
 
-    <!-- ZAKŁADKI (FORMULARZ / JAK UDOSTĘPNIĆ) -->
-    <div class="flex border-b border-slate-100 bg-slate-50/50">
-        <button id="tabFormBtn" onclick="switchTab('form')" class="flex-1 py-3 px-4 text-sm font-semibold text-travel-700 border-b-2 border-travel-600 bg-white transition-all">
-            <i class="fa-solid fa-pen-to-square mr-2"></i>Formularz POI
-        </button>
-        <button id="tabShareBtn" onclick="switchTab('share')" class="flex-1 py-3 px-4 text-sm font-medium text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition-all">
-            <i class="fa-solid fa-share-nodes mr-2"></i>Jak udostępnić? <span class="bg-emerald-500 text-white text-[10px] px-1.5 py-0.5 rounded-full ml-1">Zrób to sam!</span>
-        </button>
-    </div>
-
     <!-- ZAWARTOŚĆ FORMULARZA -->
-    <main id="tabFormContent" class="p-6 space-y-6">
+    <main class="p-6 space-y-6">
         
         <!-- SEKCJA MULTIMEDIÓW (ZDJĘCIE / FILM) -->
         <div>
@@ -229,13 +220,21 @@
             <div class="flex flex-col sm:flex-row gap-4 items-center sm:items-start">
                 <!-- Zdjęcie + Logo -->
                 <div class="flex items-center space-x-3 shrink-0">
-                    <!-- Zdjęcie Elżbiety (kobieta ok. 55 lat) -->
-                    <div class="relative group">
-                        <img id="authorAvatar" src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120" alt="Elżbieta Kowalska" class="w-16 h-16 rounded-full object-cover border-2 border-travel-600 shadow-md">
+                    <!-- Zdjęcie Elżbiety (kobieta ok. 55 lat) z opcją wgrywania własnego -->
+                    <div class="relative group cursor-pointer" onclick="document.getElementById('authorAvatarInput').click()" title="Kliknij, aby zmienić zdjęcie autora">
+                        <input type="file" id="authorAvatarInput" class="hidden" accept="image/*">
+                        <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-travel-600 shadow-md relative">
+                            <img id="authorAvatar" src="https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120" alt="Elżbieta Kowalska" class="w-full h-full object-cover group-hover:opacity-80 transition-opacity">
+                            <!-- Nakładka edycyjna z aparatem (hover effect) -->
+                            <div class="absolute inset-0 bg-black/45 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity duration-200">
+                                <i class="fa-solid fa-camera text-xs"></i>
+                            </div>
+                        </div>
                         <div class="absolute -bottom-1 -right-1 bg-travel-700 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]" title="Aktywna Autorka">
                             <i class="fa-solid fa-graduation-cap"></i>
                         </div>
                     </div>
+                    
                     <!-- Logo (Uploadable Placeholder) -->
                     <div onclick="document.getElementById('logoInput').click()" class="w-16 h-16 border border-dashed border-slate-300 rounded-xl flex flex-col items-center justify-center bg-white cursor-pointer hover:border-travel-600 hover:bg-travel-50/50 transition-all text-center p-1" title="Kliknij, aby wgrać logo">
                         <input type="file" id="logoInput" class="hidden" accept="image/*">
@@ -302,54 +301,6 @@
         </div>
 
     </main>
-
-    <!-- ZAKŁADKA: JAK UDOSTĘPNIĆ? -->
-    <section id="tabShareContent" class="hidden p-6 space-y-6">
-        <div class="bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
-            <h3 class="text-sm font-bold text-emerald-800 flex items-center gap-1.5">
-                <i class="fa-solid fa-circle-check text-emerald-600"></i> Udostępnij ten formularz każdemu w sieci!
-            </h3>
-            <p class="text-xs text-emerald-700 mt-1">Ten plik HTML to w pełni samodzielna aplikacja. Możesz go hostować za darmo w kilka sekund.</p>
-        </div>
-
-        <div class="space-y-4">
-            <h4 class="text-xs font-bold uppercase text-slate-500 tracking-wider">3 Proste i bezpłatne kroki:</h4>
-            
-            <!-- Krok 1 -->
-            <div class="flex gap-3">
-                <div class="w-6 h-6 bg-travel-600 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0">1</div>
-                <div>
-                    <h5 class="text-sm font-bold text-slate-800">Skopiuj kod źródłowy</h5>
-                    <p class="text-xs text-slate-500 mt-0.5">Kliknij poniższy przycisk, aby zapisać cały kod źródłowy tej strony w pamięci podręcznej.</p>
-                    <button type="button" onclick="copyEntireCode()" class="mt-2 bg-white hover:bg-slate-50 text-travel-700 border border-travel-200 hover:border-travel-600 px-3 py-1.5 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-all">
-                        <i class="fa-solid fa-copy"></i> Skopiuj kod HTML
-                    </button>
-                </div>
-            </div>
-
-            <!-- Krok 2 -->
-            <div class="flex gap-3">
-                <div class="w-6 h-6 bg-travel-600 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0">2</div>
-                <div>
-                    <h5 class="text-sm font-bold text-slate-800">Skorzystaj z darmowego hostingu</h5>
-                    <p class="text-xs text-slate-500 mt-0.5">Otwórz darmową witrynę do szybkiego publikowania stron:</p>
-                    <ul class="list-disc pl-4 text-xs text-slate-600 mt-1.5 space-y-2">
-                        <li><strong>GitHub Pages (Najlepsza opcja):</strong> Utwórz darmowe repozytorium na <a href="https://github.com" target="_blank" class="text-travel-600 hover:underline font-bold">github.com</a>, wgraj tam pobrany plik jako <code class="bg-slate-100 px-1 py-0.5 rounded text-red-600">index.html</code> i włącz **Pages** w ustawieniach (Settings -> Pages). Twoja strona otrzyma profesjonalny i stały adres URL!</li>
-                        <li><strong>Netlify Drop:</strong> Przejdź na <a href="https://app.netlify.com/drop" target="_blank" class="text-travel-600 hover:underline font-bold">app.netlify.com/drop</a> i po prostu przeciągnij tam pobrany plik.</li>
-                    </ul>
-                </div>
-            </div>
-
-            <!-- Krok 3 -->
-            <div class="flex gap-3">
-                <div class="w-6 h-6 bg-travel-600 text-white font-bold text-xs rounded-full flex items-center justify-center shrink-0">3</div>
-                <div>
-                    <h5 class="text-sm font-bold text-slate-800">Wyślij link Elżbiecie!</h5>
-                    <p class="text-xs text-slate-500 mt-0.5">Wygenerowany link możesz wysłać SMS-em, mailem lub na Messengerze. Każdy wypełniony przez nią punkt pobierze gotowy plik JSON dla Ciebie.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
 </div>
 
@@ -489,9 +440,6 @@
     </div>
 </div>
 
-<!-- TEXTAREA DO KOPIOWANIA KODU (Do obejścia ograniczeń iframe) -->
-<textarea id="codeCopyArea" class="absolute -top-[9999px] -left-[9999px] hidden"></textarea>
-
 <script>
     // Flaga śledząca czy użytkownik otworzył i przewinął politykę prywatności
     let hasReadPolicy = false;
@@ -519,32 +467,6 @@
             toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
             toast.classList.remove('opacity-100', 'translate-y-0');
         }, 3000);
-    }
-
-    // Przełączanie zakładek (Formularz / Udostępnianie)
-    function switchTab(tab) {
-        const tabFormBtn = document.getElementById('tabFormBtn');
-        const tabShareBtn = document.getElementById('tabShareBtn');
-        const tabFormContent = document.getElementById('tabFormContent');
-        const tabShareContent = document.getElementById('tabShareContent');
-
-        if (tab === 'form') {
-            tabFormBtn.classList.add('text-travel-700', 'border-travel-600', 'bg-white');
-            tabFormBtn.classList.remove('text-slate-500', 'border-transparent');
-            tabShareBtn.classList.remove('text-travel-700', 'border-travel-600', 'bg-white');
-            tabShareBtn.classList.add('text-slate-500', 'border-transparent');
-
-            tabFormContent.classList.remove('hidden');
-            tabShareContent.classList.add('hidden');
-        } else {
-            tabShareBtn.classList.add('text-travel-700', 'border-travel-600', 'bg-white');
-            tabShareBtn.classList.remove('text-slate-500', 'border-transparent');
-            tabFormBtn.classList.remove('text-travel-700', 'border-travel-600', 'bg-white');
-            tabFormBtn.classList.add('text-slate-500', 'border-transparent');
-
-            tabFormContent.classList.add('hidden');
-            tabShareContent.classList.remove('hidden');
-        }
     }
 
     // Obsługa Polityki Prywatności Modala
@@ -695,6 +617,22 @@
         }
     });
 
+    // Wgrywanie i zmiana zdjęcia autora (Elżbiety)
+    const authorAvatarInput = document.getElementById('authorAvatarInput');
+    const authorAvatar = document.getElementById('authorAvatar');
+
+    authorAvatarInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                authorAvatar.src = event.target.result;
+                showToast("Zaktualizowano zdjęcie autora!", "success");
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
     // Edycja sekcji autorskiej
     function toggleAuthorEdit() {
         const preview = document.getElementById('authorBioText');
@@ -730,11 +668,12 @@
     function getFormData() {
         return {
             metadata: {
-                generator: "Wirtualny Lot Dronem - Panel Autora v2.1",
+                generator: "Wirtualny Lot Dronem - Panel Autora v2.2",
                 data_stworzenia: new Date().toISOString(),
                 autor: {
                     nazwa: document.getElementById('authorName').innerText,
-                    biogram: document.getElementById('authorBioInput').value
+                    biogram: document.getElementById('authorBioInput').value,
+                    zdjecie_base64: authorAvatar.src.startsWith('data:image') ? authorAvatar.src : "domyslne"
                 },
                 zatwierdzenie_prawne: {
                     zaakceptowano_polityke: document.getElementById('policyCheckbox').checked,
@@ -806,7 +745,14 @@
 
     function cancelForm() {
         if (confirm("Czy na pewno chcesz wyczyścić formularz? Stracisz wpisane dane.")) {
-            document.getElementById('poiForm').reset();
+            document.getElementById('poiName').value = "";
+            document.getElementById('poiShortDesc').value = "";
+            document.getElementById('poiHistory').value = "";
+            document.getElementById('poiSteps').value = "1200";
+            document.getElementById('poiPrice').value = "0.00";
+            document.getElementById('poiWheelchair').checked = false;
+            document.getElementById('poiTrivia').value = "";
+            
             clearMedia({ stopPropagation: () => {} });
             
             // Zresetuj politykę
@@ -821,34 +767,6 @@
             toggleFormButtons();
             showToast("Zresetowano formularz", "info");
         }
-    }
-
-    // Funkcja do kopiowania kodu całego pliku (obejście iFrame przy użyciu tradycyjnej metody)
-    function copyEntireCode() {
-        const area = document.getElementById('codeCopyArea');
-        area.classList.remove('hidden');
-        
-        // Pobieramy kod źródłowy całej strony za pomocą fetch lub bezpośrednio document.documentElement.outerHTML
-        let pageCode = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
-        
-        // Czyścimy dynamiczne stany przed kopiowaniem
-        pageCode = pageCode.replace(/id="previewContainer"/, 'id="previewContainer" class="hidden"');
-        
-        area.value = pageCode;
-        area.select();
-        
-        try {
-            const successful = document.execCommand('copy');
-            if (successful) {
-                showToast("Skopiowano cały kod HTML! Możesz go teraz wkleić na darmowy hosting.", "success");
-            } else {
-                showToast("Nie udało się automatycznie skopiować kodu. Skopiuj go ręcznie z edytora.", "error");
-            }
-        } catch (err) {
-            showToast("Błąd podczas kopiowania. Użyj przycisku w edytorze kodu.", "error");
-        }
-        
-        area.classList.add('hidden');
     }
 </script>
 
