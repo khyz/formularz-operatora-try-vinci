@@ -89,6 +89,23 @@
 
     <!-- ZAWARTOŚĆ FORMULARZA -->
     <main class="p-6 space-y-6">
+
+        <!-- WCZYTAJ ISTNIEJĄCĄ KARTĘ (EDYCJA) -->
+        <div class="bg-travel-50/70 border border-travel-200 rounded-2xl p-4 flex items-center justify-between gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-travel-700 shadow-sm border border-travel-100">
+                    <i class="fa-solid fa-file-import text-lg"></i>
+                </div>
+                <div>
+                    <h4 class="text-sm font-bold text-slate-800">Wczytaj istniejącą kartę</h4>
+                    <p class="text-xs text-slate-500">Wybierz plik .json, aby uzupełnić formularz do edycji</p>
+                </div>
+            </div>
+            <button type="button" onclick="document.getElementById('loadJsonInput').click()" class="shrink-0 bg-white hover:bg-travel-100 border border-travel-200 text-travel-700 py-2 px-4 rounded-xl text-xs font-bold flex items-center gap-2 transition-all shadow-xs">
+                <i class="fa-solid fa-folder-open"></i> Wczytaj JSON
+            </button>
+            <input type="file" id="loadJsonInput" class="hidden" accept="application/json,.json">
+        </div>
         
         <!-- SEKCJA MULTIMEDIÓW (ZDJĘCIE / FILM) -->
         <div>
@@ -162,7 +179,7 @@
         <div class="grid grid-cols-2 gap-4">
             <div>
                 <label for="poiSteps" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
-                    <i class="fa-solid fa-star text-travel-600 mr-1"></i> Liczba punktów do zwiedzenia 
+                    <i class="fa-solid fa-star text-travel-600 mr-1"></i> Liczba kroków
                 </label>
                 <div class="relative">
                     <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"><i class="fa-solid fa-award"></i></span>
@@ -733,6 +750,73 @@
                 plik_logo_uczelni: logoFile ? logoFile.name : null
             }
         };
+    }
+
+    // Wczytywanie istniejącej karty (JSON) do edycji formularza
+    const loadJsonInput = document.getElementById('loadJsonInput');
+    loadJsonInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            try {
+                const data = JSON.parse(event.target.result);
+                populateFormFromData(data);
+                showToast(`Wczytano kartę: ${file.name}`, "success");
+            } catch (err) {
+                showToast("Nie udało się odczytać pliku JSON: " + err.message, "error");
+            } finally {
+                loadJsonInput.value = "";
+            }
+        };
+        reader.readAsText(file);
+    });
+
+    function populateFormFromData(data) {
+        const meta = data.metadata || {};
+        const poi = data.punkt_poi || {};
+        const stats = poi.statystyki || {};
+        const autor = meta.autor || {};
+        const prawne = meta.zatwierdzenie_prawne || {};
+
+        // Podstawowe pola punktu POI
+        document.getElementById('poiName').value = poi.nazwa && poi.nazwa !== "Nienazwany punkt" ? poi.nazwa : "";
+        document.getElementById('poiShortDesc').value = poi.opis_krotki || "";
+        document.getElementById('poiHistory').value = poi.historia_obiektu || "";
+        document.getElementById('poiTrivia').value = poi.ciekawostka || "";
+
+        // Statystyki (liczba kroków, cena, wózki)
+        document.getElementById('poiSteps').value = stats.liczba_punktow ?? 1200;
+        document.getElementById('poiPrice').value = (stats.cena_biletu_pln ?? 0).toFixed
+            ? stats.cena_biletu_pln.toFixed(2)
+            : stats.cena_biletu_pln || "0.00";
+        document.getElementById('poiWheelchair').checked = !!stats.przyjazne_dla_wozkow;
+
+        // Notka autora
+        if (autor.nazwa) {
+            document.getElementById('authorName').innerText = autor.nazwa;
+            document.getElementById('authorNameInput').value = autor.nazwa;
+        }
+        if (autor.biogram) {
+            document.getElementById('authorBioInput').value = autor.biogram;
+            document.getElementById('authorBioText').innerHTML = `<strong>${autor.nazwa || 'Autor'}</strong><br>${autor.biogram}`;
+        }
+
+        // Uwaga: pliki binarne (zdjęcia, wideo, logo) nie są zapisane w samym JSON,
+        // więc trzeba je wgrać ponownie ręcznie, jeśli mają zostać zmienione.
+        // Referencje do nazw plików pokazujemy w komunikacie poniżej.
+        const referencedFiles = [];
+        if (poi.plik_multimediow) referencedFiles.push(poi.plik_multimediow);
+        if (poi.plik_logo_uczelni) referencedFiles.push(poi.plik_logo_uczelni);
+        if (autor.zdjecie_plik) referencedFiles.push(autor.zdjecie_plik);
+        if (referencedFiles.length > 0) {
+            showToast(`Pamiętaj o ponownym dołączeniu plików: ${referencedFiles.join(', ')}`, "info");
+        }
+
+        // Jeśli karta była wcześniej zaakceptowana, nie zwalniamy automatycznie
+        // pola akceptacji polityki – użytkownik musi ją potwierdzić ponownie
+        // przy każdym wysłaniu/edycji, zgodnie z zasadami formularza.
     }
 
     function submitForm() {
