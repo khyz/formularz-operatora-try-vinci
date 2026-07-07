@@ -226,6 +226,53 @@
                       class="w-full px-4 py-3 bg-amber-50/30 border border-amber-100 rounded-xl focus:ring-2 focus:ring-amber-400 focus:bg-white focus:border-transparent outline-none transition-all text-sm italic"></textarea>
         </div>
 
+        <!-- SEKCJA QUIZU -->
+        <div class="bg-gradient-to-br from-indigo-50/70 to-purple-50/40 border border-indigo-200/60 rounded-2xl p-4 space-y-4 relative">
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-indigo-800">
+                    <i class="fa-solid fa-circle-question mr-1 text-indigo-500"></i> Pytanie Quizowe
+                </span>
+                <span class="text-[10px] text-indigo-400 font-medium italic">Gracz odpowiada po zebraniu karty</span>
+            </div>
+
+            <!-- Treść pytania -->
+            <div>
+                <label for="quizQuestion" class="block text-[11px] font-semibold text-slate-600 mb-1.5">Treść pytania</label>
+                <textarea id="quizQuestion" rows="2" placeholder="Np. W którym wieku zbudowano ten zamek?"
+                          class="w-full px-4 py-3 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-sm"></textarea>
+            </div>
+
+            <!-- Odpowiedzi -->
+            <div class="space-y-2">
+                <label class="block text-[11px] font-semibold text-slate-600">Odpowiedzi (dokładnie 3)</label>
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</span>
+                    <input type="text" id="quizAnswer1" placeholder="Odpowiedź nr 1"
+                           class="flex-1 px-3 py-2.5 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-sm">
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</span>
+                    <input type="text" id="quizAnswer2" placeholder="Odpowiedź nr 2"
+                           class="flex-1 px-3 py-2.5 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-sm">
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 bg-indigo-100 text-indigo-700 rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</span>
+                    <input type="text" id="quizAnswer3" placeholder="Odpowiedź nr 3"
+                           class="flex-1 px-3 py-2.5 bg-white border border-indigo-200 rounded-xl focus:ring-2 focus:ring-indigo-400 focus:border-transparent outline-none transition-all text-sm">
+                </div>
+            </div>
+
+            <!-- Numer poprawnej odpowiedzi -->
+            <div class="flex items-center gap-3 bg-white/70 rounded-xl p-3 border border-indigo-100">
+                <label for="quizCorrect" class="text-xs font-semibold text-slate-700 whitespace-nowrap">
+                    <i class="fa-solid fa-check-circle text-emerald-500 mr-1"></i> Poprawna odpowiedź nr:
+                </label>
+                <input type="number" id="quizCorrect" min="1" max="3" value="1"
+                       class="w-16 px-3 py-2 bg-white border border-indigo-200 rounded-lg focus:ring-2 focus:ring-emerald-400 focus:border-transparent outline-none transition-all text-sm font-bold text-center">
+                <span class="text-[10px] text-slate-400">(1, 2 lub 3)</span>
+            </div>
+        </div>
+
         <!-- SEKCJA AUTORSKA (ELŻBIETA KOWALSKA) -->
         <div class="bg-gradient-to-br from-travel-50 to-amber-50/50 border border-travel-200/70 rounded-2xl p-4 space-y-4 relative">
             <div class="flex items-center justify-between">
@@ -718,6 +765,24 @@
     let currentFileName = "punkt_mapy.json";
 
     function getFormData() {
+        // Quiz data
+        const quizQuestion = document.getElementById('quizQuestion').value.trim();
+        const quizAnswer1 = document.getElementById('quizAnswer1').value.trim();
+        const quizAnswer2 = document.getElementById('quizAnswer2').value.trim();
+        const quizAnswer3 = document.getElementById('quizAnswer3').value.trim();
+        const quizCorrectRaw = parseInt(document.getElementById('quizCorrect').value);
+        const quizCorrect = (quizCorrectRaw >= 1 && quizCorrectRaw <= 3) ? quizCorrectRaw : 1;
+
+        // Buduj obiekt quizu tylko jeśli pytanie nie jest puste
+        let quizData = null;
+        if (quizQuestion) {
+            quizData = {
+                pytanie: quizQuestion,
+                odpowiedzi: [quizAnswer1, quizAnswer2, quizAnswer3],
+                poprawna_odpowiedz: quizCorrect
+            };
+        }
+
         return {
             metadata: {
                 generator: "Wirtualny Lot Dronem - Panel Autora v2.2 (Archiwum ZIP)",
@@ -725,7 +790,6 @@
                 autor: {
                     nazwa: document.getElementById('authorName').innerText,
                     biogram: document.getElementById('authorBioInput').value,
-                    // Referencja do pliku fizycznego spakowanego w archiwum
                     zdjecie_plik: authorAvatarFile ? authorAvatarFile.name : "elzbieta_kowalska_domyslne.jpg"
                 },
                 zatwierdzenie_prawne: {
@@ -745,7 +809,7 @@
                     przyjazne_dla_wozkow: document.getElementById('poiWheelchair').checked
                 },
                 ciekawostka: document.getElementById('poiTrivia').value || "",
-                // Klucze referencyjne do spakowanych obok plików multimedialnych
+                quiz: quizData,
                 plik_multimediow: poiMediaFile ? poiMediaFile.name : null,
                 plik_logo_uczelni: logoFile ? logoFile.name : null
             }
@@ -793,6 +857,23 @@
             : stats.cena_biletu_pln || "0.00";
         document.getElementById('poiWheelchair').checked = !!stats.przyjazne_dla_wozkow;
 
+        // Quiz
+        const quiz = poi.quiz;
+        if (quiz) {
+            document.getElementById('quizQuestion').value = quiz.pytanie || "";
+            const odpowiedzi = quiz.odpowiedzi || [];
+            document.getElementById('quizAnswer1').value = odpowiedzi[0] || "";
+            document.getElementById('quizAnswer2').value = odpowiedzi[1] || "";
+            document.getElementById('quizAnswer3').value = odpowiedzi[2] || "";
+            document.getElementById('quizCorrect').value = quiz.poprawna_odpowiedz || 1;
+        } else {
+            document.getElementById('quizQuestion').value = "";
+            document.getElementById('quizAnswer1').value = "";
+            document.getElementById('quizAnswer2').value = "";
+            document.getElementById('quizAnswer3').value = "";
+            document.getElementById('quizCorrect').value = 1;
+        }
+
         // Notka autora
         if (autor.nazwa) {
             document.getElementById('authorName').innerText = autor.nazwa;
@@ -803,9 +884,6 @@
             document.getElementById('authorBioText').innerHTML = `<strong>${autor.nazwa || 'Autor'}</strong><br>${autor.biogram}`;
         }
 
-        // Uwaga: pliki binarne (zdjęcia, wideo, logo) nie są zapisane w samym JSON,
-        // więc trzeba je wgrać ponownie ręcznie, jeśli mają zostać zmienione.
-        // Referencje do nazw plików pokazujemy w komunikacie poniżej.
         const referencedFiles = [];
         if (poi.plik_multimediow) referencedFiles.push(poi.plik_multimediow);
         if (poi.plik_logo_uczelni) referencedFiles.push(poi.plik_logo_uczelni);
@@ -813,14 +891,9 @@
         if (referencedFiles.length > 0) {
             showToast(`Pamiętaj o ponownym dołączeniu plików: ${referencedFiles.join(', ')}`, "info");
         }
-
-        // Jeśli karta była wcześniej zaakceptowana, nie zwalniamy automatycznie
-        // pola akceptacji polityki – użytkownik musi ją potwierdzić ponownie
-        // przy każdym wysłaniu/edycji, zgodnie z zasadami formularza.
     }
 
     function submitForm() {
-        // Dodatkowa twarda walidacja przed uruchomieniem generowania
         if (!document.getElementById('policyCheckbox').checked) {
             showToast("Musisz najpierw zaakceptować oświadczenie i politykę prywatności!", "error");
             return;
@@ -836,7 +909,6 @@
         currentGeneratedJson = JSON.stringify(data, null, 2);
         currentFileName = (nameInput.toLowerCase().replace(/[^a-z0-9]+/g, '_') || "punkt_mapy") + ".json";
 
-        // Aktualizacja informacji o elementach paczki ZIP w widoku modala
         document.getElementById('zipJsonName').innerText = currentFileName;
         
         const zipMediaInfo = document.getElementById('zipMediaInfo');
@@ -863,7 +935,6 @@
             zipLogoInfo.classList.add('hidden');
         }
 
-        // Wyświetlenie modala z kodem JSON
         document.getElementById('jsonPreviewCode').textContent = currentGeneratedJson;
         document.getElementById('jsonModal').classList.remove('hidden');
     }
@@ -875,28 +946,20 @@
     function downloadZipArchive() {
         const zip = new JSZip();
         
-        // Dodaj plik konfiguracyjny JSON
         zip.file(currentFileName, currentGeneratedJson);
         
-        // Dodaj fizyczny plik wideo/foto drona
         if (poiMediaFile) {
             zip.file(poiMediaFile.name, poiMediaFile);
         }
         
-        // Dodaj fizyczny plik avataru autora
         if (authorAvatarFile) {
             zip.file(authorAvatarFile.name, authorAvatarFile);
-        } else {
-            // Jeśli nie zmieniono avatara, możemy opcjonalnie pobrać domyślny z unsplash
-            // Dla prostoty i pełnej niezależności, spakujemy go tylko jeśli użytkownik go spersonalizował.
         }
 
-        // Dodaj fizyczny plik logo
         if (logoFile) {
             zip.file(logoFile.name, logoFile);
         }
 
-        // Budowanie i pobieranie pliku ZIP
         showToast("Generowanie paczki ZIP...", "info");
         
         zip.generateAsync({type:"blob"}).then(function(content) {
@@ -924,7 +987,6 @@
         showToast("Kopia robocza zapisana w pamięci przeglądarki!", "info");
     }
 
-    // Autorskie zastępstwo dla standardowego confirm()
     function showCancelConfirmation() {
         document.getElementById('confirmCancelModal').classList.remove('hidden');
     }
@@ -934,7 +996,6 @@
     }
 
     function confirmResetForm() {
-        // Wyczyść pola tekstowe
         document.getElementById('poiName').value = "";
         document.getElementById('poiShortDesc').value = "";
         document.getElementById('poiHistory').value = "";
@@ -943,7 +1004,13 @@
         document.getElementById('poiWheelchair').checked = false;
         document.getElementById('poiTrivia').value = "";
         
-        // Wyczyść pliki
+        // Reset quizu
+        document.getElementById('quizQuestion').value = "";
+        document.getElementById('quizAnswer1').value = "";
+        document.getElementById('quizAnswer2').value = "";
+        document.getElementById('quizAnswer3').value = "";
+        document.getElementById('quizCorrect').value = 1;
+        
         poiMediaFile = null;
         authorAvatarFile = null;
         logoFile = null;
@@ -952,7 +1019,6 @@
         logoInput.value = "";
         authorAvatarInput.value = "";
 
-        // Przywróć grafiki domyślne
         previewContainer.classList.add('hidden');
         imagePreview.src = "";
         videoPreview.src = "";
@@ -960,7 +1026,6 @@
         logoDefault.classList.remove('hidden');
         authorAvatar.src = "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?auto=format&fit=crop&q=80&w=120";
 
-        // Zresetuj politykę prywatności
         hasReadPolicy = false;
         const checkbox = document.getElementById('policyCheckbox');
         checkbox.checked = false;
